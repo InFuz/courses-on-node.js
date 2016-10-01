@@ -1,7 +1,8 @@
 {
-  "name": "simle_chat",
+  "name": "courses-on-node.js",
   "version": "0.0.1",
-  "description": "",
+  "description": "simle_chat",
+  "repository": "https://github.com/InFuz/courses-on-node.js.git",
   "main": "server.js",
   "dependencies": {
     "body-parser": "^1.15.2",
