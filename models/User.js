@@ -8,17 +8,19 @@ class User {
 		this.data = {};
 	}
 
-	static findAll(cb) {
-		Mongodb.findAll('users', (err, docs) => {
-			if (err) { return cb(err); }
-
+	static findAll() {
+		return Mongodb.findAll('users')
+		.then(docs => {
 			let users = docs.map(doc => {
 				let user = new User();
 				user.isNew = false;
 				return user.setData(doc);
 			});
 
-			cb(err, users);
+			return Promise.resolve(users);
+		})
+		.catch(err => {
+			return Promise.reject(err);
 		});
 	}
 

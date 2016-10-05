@@ -11,7 +11,9 @@ app.get('/(:user_id)?', (req, res, next) => {
     return User.find(id, (err, user) => err ? next(err) : res.send(user.data));
   }
 
-  User.findAll((err, users) => err ? next(err) : res.send(users.map(user => user.data)));
+  User.findAll()
+  .then(users => res.send(users.map(user => user.data)))
+  .catch(err => next(err));
 });
 
 app.post('/', (req, res, next) => {
