@@ -8,7 +8,9 @@ const User = require('../models/User');
 app.get('/(:user_id)?', (req, res, next) => {
   let id = req.params.user_id;
   if (id) {
-    return User.find(id, (err, user) => err ? next(err) : res.send(user.data));
+    return  User.find(id)
+            .then(user => res.send(user.data))
+            .catch(err => (res.send('User not found'), next(err)));
   }
 
   User.findAll()
@@ -23,8 +25,20 @@ app.post('/', (req, res, next) => {
 
   let user = new User();
   user.setData(req.body);
-  user.save((err, user) => err ? next(err) : res.send(user.data));
+  user.save()
+  .then(user => (console.log(user),res.send(user.data))
+  .catch(err => next(err));
 });
+
+// app.post('/', (req, res, next) => {
+//   if (!Object.keys(req.body).length) {
+//     return res.status(400).send('Empty data');
+//   }
+
+//   let user = new User();
+//   user.setData(req.body);
+//   user.save((err, user) => err ? next(err) : res.send(user.data));
+// });
 
 app.put('/:user_id', (req, res, next) => {
   if (!Object.keys(req.body).length) {
@@ -42,11 +56,11 @@ app.put('/:user_id', (req, res, next) => {
 app.delete('/:user_id', (req, res, next) => {
   let id = req.params.user_id;
 
-  User.find(id, (err, user) => {
-    if (user) {
-      user.delete(err => err ? next(err) : res.send('')); 
-    }
-  });
+  User.find(id)
+  .then(user => {return user.delete()})
+  .catch(err => (res.send('User not found'), next(err)))
+  .then(data => res.send('User ' + id + ' delete'))
+  .catch(err => (res.send('Error!'), next(err))); 
 });
 
 module.exports = app;
