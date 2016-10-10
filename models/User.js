@@ -8,29 +8,31 @@ class User {
 		this.data = {};
 	}
 
-	static findAll(cb) {
-		Mongodb.findAll('users', (err, docs) => {
-			if (err) { return cb(err); }
-
+	static findAll() {
+		return Mongodb.findAll('users')
+		.then(docs => {
 			let users = docs.map(doc => {
 				let user = new User();
 				user.isNew = false;
 				return user.setData(doc);
 			});
-
-			cb(err, users);
+			return users;
+		})
+		.catch(err => {
+			return Promise.reject(err);
 		});
 	}
 
-	static find(id, cb) {
-		Mongodb.find('users', id, (err, doc) => {
-			if (err) { return cb(err); }
-
+	static find(id) {
+		return Mongodb.find('users', id)
+		.then(doc => {
 			let user = new User();
 			user.isNew = false;
 			user.setData(doc);
-
-			cb(err, user);
+			return user;
+		})
+		.catch(err => {
+			return Promise.reject(err);
 		});
 	}
 
@@ -39,28 +41,35 @@ class User {
 		return this;
 	}
 
-	save(cb) {
-		let isSave = (err, id) => {
-			if (err) { return cb(err); }
-			User.find(id, (err, user) => {
+	save() {
+		var result;
+		if (this.isNew) {
+			result = Mongodb.insert('users', this.data);
+		} else {
+			result = Mongodb.update('users', this.data._id, this.data);
+		}
+
+		result = result.then((id) => {
+			return User.find(id)
+			.catch(err => {return Promise.reject(err)})
+			.then(user => {
 				this.data = user.data;
 				this.isNew = user.isNew;
-				cb(err, this);
-			});
-		};
-
-		if (this.isNew) {
-			Mongodb.insert('users', this.data, isSave);
-		} else {
-			Mongodb.update('users', this.data._id, this.data, isSave);
-		}
+				return this;
+			})
+			.catch(err => {return Promise.reject(err)});
+		});
+		return result;
 	}
 
-	delete(cb) {
+	delete() {
 		if (this.isNew) {
-			cb(new Error('Can\'t be delete'));
+			let err = new Error('Can\'t be delete'); 
+			return Promise.reject(err);
 		} else {
-			Mongodb.delete('users', this.data._id, cb);
+			return Mongodb.delete('users', this.data._id)
+			.then(data => {return data})
+			.catch(err => {return err});
 		}
 	}
 }

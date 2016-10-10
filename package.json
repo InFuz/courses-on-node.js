@@ -1,12 +1,13 @@
 {
-  "name": "simle_chat",
+  "name": "courses-on-node.js",
   "version": "0.0.1",
-  "description": "",
+  "description": "simle_chat",
+  "repository": "https://github.com/InFuz/courses-on-node.js.git",
   "main": "server.js",
   "dependencies": {
     "body-parser": "^1.15.2",
     "express": "^4.14.0",
-    "my_mongodb": "https://github.com/InFuz/my_mongodb.git",
+    "my-mongodb": "https://github.com/InFuz/my-mongodb.git",
     "cors": "^2.8.1",
     "pm2": "^2.0.12"
   },

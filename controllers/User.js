@@ -8,10 +8,14 @@ const User = require('../models/User');
 app.get('/(:user_id)?', (req, res, next) => {
   let id = req.params.user_id;
   if (id) {
-    return User.find(id, (err, user) => err ? next(err) : res.send(user.data));
+    return  User.find(id)
+            .then(user => res.send(user.data))
+            .catch(err => (res.send('User not found'), next(err)));
   }
 
-  User.findAll((err, users) => err ? next(err) : res.send(users.map(user => user.data)));
+  User.findAll()
+  .then(users => res.send(users.map(user => user.data)))
+  .catch(err => next(err));
 });
 
 app.post('/', (req, res, next) => {
@@ -21,7 +25,9 @@ app.post('/', (req, res, next) => {
 
   let user = new User();
   user.setData(req.body);
-  user.save((err, user) => err ? next(err) : res.send(user.data));
+  user.save()
+  .then(user => res.send(user.data))
+  .catch(err => next(err));
 });
 
 app.put('/:user_id', (req, res, next) => {
@@ -31,20 +37,24 @@ app.put('/:user_id', (req, res, next) => {
 
   let id = req.params.user_id;
 
-  User.find(id, (err, user) => {
-    user.setData(req.body);
-    user.save((err, user) => err ? next(err) : res.send(user.data));
-  });
+  return User.find(id)
+      .catch(err => {return Promise.reject(err)})
+      .then(user => {
+        user.setData(req.body);
+        user.save()
+        .then(user => res.send(user.data))
+        .catch(err => next(err));
+      });
 });
 
 app.delete('/:user_id', (req, res, next) => {
   let id = req.params.user_id;
 
-  User.find(id, (err, user) => {
-    if (user) {
-      user.delete(err => err ? next(err) : res.send('')); 
-    }
-  });
+  User.find(id)
+  .then(user => {return user.delete()})
+  .catch(err => (res.send('User not found'), next(err)))
+  .then(data => res.send('User ' + id + ' delete'))
+  .catch(err => (res.send('Error!'), next(err))); 
 });
 
 module.exports = app;

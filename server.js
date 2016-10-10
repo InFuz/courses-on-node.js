@@ -28,4 +28,6 @@ let startServer = () => {
 	});
 };
 
-Mongodb.connect(startServer);
+Mongodb.connect()
+.then(() => {startServer();})
+.catch(err => console.error(err));
