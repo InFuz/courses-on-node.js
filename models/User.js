@@ -42,26 +42,24 @@ class User {
 	}
 
 	save() {
-		let isSave = (err, id) => {
-			if (err) { return Promise.reject(err); }
-			User.find(id)
+		var result;
+		if (this.isNew) {
+			result = Mongodb.insert('users', this.data);
+		} else {
+			result = Mongodb.update('users', this.data._id, this.data);
+		}
+
+		result = result.then((id) => {
+			return User.find(id)
+			.catch(err => {return Promise.reject(err)})
 			.then(user => {
 				this.data = user.data;
 				this.isNew = user.isNew;
 				return this;
 			})
-			.catch(err => {return err});
-		};
-
-		if (this.isNew) {
-			return Mongodb.insert('users', this.data, isSave)
-			.then(user => {return user})
-			.catch(err => {return err});
-		} else {
-			return Mongodb.update('users', this.data._id, this.data, isSave)
-			.then(id => {return id})
-			.catch(err => {return err});
-		}
+			.catch(err => {return Promise.reject(err)});
+		});
+		return result;
 	}
 
 	delete() {

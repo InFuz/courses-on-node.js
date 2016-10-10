@@ -26,19 +26,9 @@ app.post('/', (req, res, next) => {
   let user = new User();
   user.setData(req.body);
   user.save()
-  .then(user => (console.log(user),res.send(user.data))
+  .then(user => res.send(user.data))
   .catch(err => next(err));
 });
-
-// app.post('/', (req, res, next) => {
-//   if (!Object.keys(req.body).length) {
-//     return res.status(400).send('Empty data');
-//   }
-
-//   let user = new User();
-//   user.setData(req.body);
-//   user.save((err, user) => err ? next(err) : res.send(user.data));
-// });
 
 app.put('/:user_id', (req, res, next) => {
   if (!Object.keys(req.body).length) {
@@ -47,10 +37,14 @@ app.put('/:user_id', (req, res, next) => {
 
   let id = req.params.user_id;
 
-  User.find(id, (err, user) => {
-    user.setData(req.body);
-    user.save((err, user) => err ? next(err) : res.send(user.data));
-  });
+  return User.find(id)
+      .catch(err => {return Promise.reject(err)})
+      .then(user => {
+        user.setData(req.body);
+        user.save()
+        .then(user => res.send(user.data))
+        .catch(err => next(err));
+      });
 });
 
 app.delete('/:user_id', (req, res, next) => {
