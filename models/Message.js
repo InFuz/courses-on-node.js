@@ -8,29 +8,31 @@ class Message {
     this.data = {};
   }
 
-  static findAll(cb) {
-    Mongodb.findAll('messages', (err, docs) => {
-      if (err) { return cb(err); }
-
+  static findAll() {
+    return Mongodb.findAll('messages')
+    .then(docs => {
       let messages = docs.map(doc => {
         let message = new Message();
         message.isNew = false;
         return message.setData(doc);
       });
-
-      cb(err, messages);
+      return messages;
+    })
+    .catch(err => {
+      return Promise.reject(err);
     });
   }
 
-  static find(id, cb) {
-    Mongodb.find('messages', id, (err, doc) => {
-      if (err) { return cb(err); }
-
+  static find(id) {
+    return Mongodb.find('messages', id)
+    .then(doc => {
       let message = new Message();
       message.isNew = false;
       message.setData(doc);
-
-      cb(err, message);
+      return message;
+    })
+    .catch(err => {
+      return Promise.reject(err);
     });
   }
 
@@ -39,28 +41,35 @@ class Message {
     return this;
   }
 
-  save(cb) {
-    let isSave = (err, id) => {
-      if (err) { return cb(err); }
-      Message.find(id, (err, message) => {
+  save() {
+    var result;
+    if (this.isNew) {
+      result = Mongodb.insert('messages', this.data);
+    } else {
+      result = Mongodb.update('messages', this.data._id, this.data);
+    }
+
+    result = result.then((id) => {
+      return Message.find(id)
+      .catch(err => {return Promise.reject(err)})
+      .then(message => {
         this.data = message.data;
         this.isNew = message.isNew;
-        cb(err, this);
-      });
-    };
-
-    if (this.isNew) {
-      Mongodb.insert('messages', this.data, isSave);
-    } else {
-      Mongodb.update('messages', this.data._id, this.data, isSave);
-    }
+        return this;
+      })
+      .catch(err => {return Promise.reject(err)});
+    });
+    return result;
   }
 
-  delete(cb) {
+  delete() {
     if (this.isNew) {
-      cb(new Error('Can\'t be delete'));
+      let err = new Error('Can\'t be delete'); 
+      return Promise.reject(err);
     } else {
-      Mongodb.delete('messages', this.data._id, cb);
+      return Mongodb.delete('messages', this.data._id)
+      .then(data => {return data})
+      .catch(err => {return err});
     }
   }
 }

@@ -1,6 +1,6 @@
 {
   "name": "courses-on-node.js",
-  "version": "0.0.1",
+  "version": "0.1.0",
   "description": "simle_chat",
   "repository": "https://github.com/InFuz/courses-on-node.js.git",
   "main": "server.js",

@@ -8,10 +8,14 @@ const Room = require('../models/Room');
 app.get('/(:room_id)?', (req, res, next) => {
   let id = req.params.room_id;
   if (id) {
-    return Room.find(id, (err, room) => err ? next(err) : res.send(room.data));
+    return  Room.find(id)
+            .then(room => res.send(room.data))
+            .catch(err => (res.send('Room not found'), next(err)));
   }
 
-  Room.findAll((err, rooms) => err ? next(err) : res.send(rooms.map(room => room.data)));
+  Room.findAll()
+  .then(rooms => res.send(rooms.map(room => room.data)))
+  .catch(err => next(err));
 });
 
 app.post('/', (req, res, next) => {
@@ -21,7 +25,9 @@ app.post('/', (req, res, next) => {
 
   let room = new Room();
   room.setData(req.body);
-  room.save((err, room) => err ? next(err) : res.send(room.data));
+  room.save()
+  .then(room => res.send(room.data))
+  .catch(err => next(err));
 });
 
 app.put('/:room_id', (req, res, next) => {
@@ -31,20 +37,24 @@ app.put('/:room_id', (req, res, next) => {
 
   let id = req.params.room_id;
 
-  Room.find(id, (err, room) => {
-    room.setData(req.body);
-    room.save((err, room) => err ? next(err) : res.send(room.data));
-  });
+  return Room.find(id)
+      .catch(err => {return Promise.reject(err)})
+      .then(room => {
+        room.setData(req.body);
+        room.save()
+        .then(room => res.send(room.data))
+        .catch(err => next(err));
+      });
 });
 
 app.delete('/:room_id', (req, res, next) => {
   let id = req.params.room_id;
-  
-  Room.find(id, (err, room) => {
-    if (room) {
-      room.delete(err => err ? next(err) : res.send());
-    }
-  });
+
+  Room.find(id)
+  .then(room => {return room.delete()})
+  .catch(err => (res.send('Room not found'), next(err)))
+  .then(data => res.send('Room ' + id + ' delete'))
+  .catch(err => (res.send('Error!'), next(err))); 
 });
 
 module.exports = app;

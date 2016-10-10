@@ -8,29 +8,31 @@ class Room {
     this.data = {};
   }
 
-  static findAll(cb) {
-    Mongodb.findAll('rooms', (err, docs) => {
-      if (err) { return cb(err); }
-
+  static findAll() {
+    return Mongodb.findAll('rooms')
+    .then(docs => {
       let rooms = docs.map(doc => {
         let room = new Room();
         room.isNew = false;
         return room.setData(doc);
       });
-
-      cb(err, rooms);
+      return rooms;
+    })
+    .catch(err => {
+      return Promise.reject(err);
     });
   }
 
-  static find(id, cb) {
-    Mongodb.find('rooms', id, (err, doc) => {
-      if (err) { return cb(err); }
-
+  static find(id) {
+    return Mongodb.find('rooms', id)
+    .then(doc => {
       let room = new Room();
       room.isNew = false;
       room.setData(doc);
-
-      cb(err, room);
+      return room;
+    })
+    .catch(err => {
+      return Promise.reject(err);
     });
   }
 
@@ -39,28 +41,35 @@ class Room {
     return this;
   }
 
-  save(cb) {
-    let isSave = (err, id) => {
-      if (err) { return cb(err); }
-      Room.find(id, (err, room) => {
+  save() {
+    var result;
+    if (this.isNew) {
+      result = Mongodb.insert('rooms', this.data);
+    } else {
+      result = Mongodb.update('rooms', this.data._id, this.data);
+    }
+
+    result = result.then((id) => {
+      return Room.find(id)
+      .catch(err => {return Promise.reject(err)})
+      .then(room => {
         this.data = room.data;
         this.isNew = room.isNew;
-        cb(err, this);
-      });
-    };
-
-    if (this.isNew) {
-      Mongodb.insert('rooms', this.data, isSave);
-    } else {
-      Mongodb.update('rooms', this.data._id, this.data, isSave);
-    }
+        return this;
+      })
+      .catch(err => {return Promise.reject(err)});
+    });
+    return result;
   }
 
-  delete(cb) {
+  delete() {
     if (this.isNew) {
-      cb(new Error('Can\'t be delete'));
+      let err = new Error('Can\'t be delete'); 
+      return Promise.reject(err);
     } else {
-      Mongodb.delete('rooms', this.data._id, cb);
+      return Mongodb.delete('rooms', this.data._id)
+      .then(data => {return data})
+      .catch(err => {return err});
     }
   }
 }
