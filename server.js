@@ -13,6 +13,7 @@ app.use(cors());
 app.use(bodyparser.json());
 app.use(bodyparser.urlencoded({ extended: false }));
 
+app.use('/', require('./controllers/getHtml'));
 app.use('/user', require('./controllers/User'));
 app.use('/room', require('./controllers/Room'));
 app.use('/message', require('./controllers/Message'));
