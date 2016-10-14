@@ -2,8 +2,10 @@
   ul
     li(
       data-ng-repeat='message in main.messages track by $index'
-    )
+    ) {{::message.author}}: {{::message.text}}
 form#t-box(
+  novalidate
+  data-ng-submit='main.send()'
 ) Имя:
   input.name(
     data-ng-model='main.user.username',
@@ -22,6 +24,6 @@ form#t-box(
   )
   input.send(
     type='submit',
-    value='Отправить'
+    value='Отправить',
   )
 

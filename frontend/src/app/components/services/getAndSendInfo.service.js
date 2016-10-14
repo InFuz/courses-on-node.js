@@ -2,16 +2,17 @@
   'use strict';
   angular
     .module('frontend')
-    .service('getInfoService', getInfoService);
+    .service('getAndSendInfoService', getAndSendInfoService);
 
   /** @ngInject */
-  function getInfoService($log, $http, $q, API_URL) {
+  function getAndSendInfoService($log, $http, $q, API_URL) {
     var vm = this;
 
     /* public */
 
     vm.getAllUsersInfo = getAllUsersInfo;
     vm.getAllMessages = getAllMessages;
+    vm.sendMessagesAndAuthor = sendMessagesAndAuthor;
 
     /* private */
 
@@ -42,7 +43,29 @@
         url: API_URL + 'message'
       }).then(
         function(res) {
-          //$log.info(response);
+          //$log.info(res);
+          def.resolve(res.data);
+        },
+        function(rej) {
+          $log.warn(rej);
+          def.reject(rej);
+        });
+
+      return def.promise;
+    }
+
+    function sendMessagesAndAuthor(author, textMessage) {
+      var def = $q.defer();
+      $http({
+        method: 'POST',
+        url: API_URL + 'message',
+        data: {
+          author: author,
+          text: textMessage
+        }
+      }).then(
+        function(res) {
+          //$log.info(res);
           def.resolve(res.data);
         },
         function(rej) {
