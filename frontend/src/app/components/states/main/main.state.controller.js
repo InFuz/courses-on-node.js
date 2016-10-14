@@ -9,23 +9,20 @@
   function MainController(getAndSendInfoService) {
     var main = this;
 
-    getAllMessages();
-
     main.send = sendMessage;
+    getAllMessages();
 
     function sendMessage() {
       getAndSendInfoService.sendMessagesAndAuthor(main.user.username, main.user.usermessage).then(function() {
         getAllMessages();
-        main.user.usermessage = '';
       });
+      main.user.usermessage = '';
     }
 
     function getAllMessages() {
       getAndSendInfoService.getAllMessages().then(function(res) {
         console.log(res);
-        if (res.length) {
-          main.messages = res;
-        }
+        main.messages = res;
       });
     }
 
