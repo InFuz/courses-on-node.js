@@ -1,0 +1,29 @@
+#msg-box
+  ul
+    li(
+      data-ng-repeat='message in main.messages track by $index'
+    ) {{::message.author}}: {{::message.text}}
+form#t-box(
+  novalidate
+  data-ng-submit='main.send()'
+) Имя:
+  input.name(
+    data-ng-model='main.user.username',
+    data-ng-model-options="{debounce: 400}",
+    type='text',
+    placeholder='Your name',
+    value='{{main.user.username}}',
+    required
+  )
+  input.msg(
+    data-ng-model='main.user.usermessage',
+    data-ng-model-options="{debounce: 400}",
+    type='text',
+    placeholder='Your text...',
+    required
+  )
+  input.send(
+    type='submit',
+    value='Отправить',
+  )
+
