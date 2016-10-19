@@ -3,28 +3,18 @@
 var net = require('net');
 var stream = require('stream');
 
-class myStream extends stream.Duplex {
+var id = 0;
+
+class myStream extends stream.Transform {
 	constructor (options) {
 		super(options);
-		this.buffer = new Buffer();
 	}
 
-	_read(size) {
-		var buf = this.buffer.slice(0, size);
-		this.buffer = this.buffer.slice(size);
+	_transform(buf, encoding, cb) {
+		buf = JSON.stringify([id++, 'question', buf.toString()]);
 
-		if (buf.length) {
-			this.push(buf);
-		}
+		cb(null, buf);
 	}
-
-	_write(buf, encoding, cb) {
-		this.buffer = Buffer.concat([this.buffer, buf]);
-		this._read(buf.length);
-		cb();
-	}
-
-	
 }
 
 var server = net.createServer((conn) => {
@@ -32,21 +22,16 @@ var server = net.createServer((conn) => {
 	var lastChunk = '';
 
 	conn.on('data', (chunk) => {
+		console.log('');
 		console.log('### Data');
-		chunk = chunk.toString();
-		chunk = lastChunk + chunk;
-		chunk = chunk.split('\n');
-		lastChunk = chunk.pop();
-
 		if (!chunk.length) return;
+		
+		console.log(chunk.toString());
 	});
 
-	conn.on('disconnect', () => {
-		console.log('### Disconnect');
-	});
+	var o = new myStream({});
 
-	conn.pipe(process.stdout);
-	process.stdin.pipe(conn);
+	process.stdin.pipe(o).pipe(conn);
 });
 
 server.listen(8088, () => {
