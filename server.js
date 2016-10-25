@@ -4,8 +4,10 @@ const express = require('express');
 const cors = require('cors');
 const bodyparser = require('body-parser');
 const Mongodb = require('my-mongodb');
-
 const app = express();
+
+const http = require('http').Server(app);
+const io = require('socket.io')(http);
 
 app.set('port', 8080);
 
@@ -33,3 +35,17 @@ let startServer = () => {
 Mongodb.connect()
 .then(() => {startServer();})
 .catch(err => console.error(err));
+
+http.listen(8088, function(){
+  console.log('SOCKET.IO listening on port 8088');
+});
+
+io.on('connection', function(socket){
+  console.log('a user connected');
+  socket.on('chat message', function(msg){
+  	io.emit('chat message', msg);
+  });
+  socket.on('disconnect', function(){
+    console.log('user disconnected');
+  });
+});
