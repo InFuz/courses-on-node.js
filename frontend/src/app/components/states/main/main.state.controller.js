@@ -6,18 +6,23 @@
     .controller('MainController', MainController);
 
   /** @ngInject */
-  function MainController(getAndSendInfoService) {
+  function MainController(io, SOCKET_URL, getAndSendInfoService) {
     var main = this;
 
     main.send = sendMessage;
+
+    var socket = io(SOCKET_URL);
     getAllMessages();
 
     function sendMessage() {
-      getAndSendInfoService.sendMessagesAndAuthor(main.user.username, main.user.usermessage).then(function() {
-        getAllMessages();
-      });
+      socket.emit('chat message', main.user.usermessage);
+      getAndSendInfoService.sendMessagesAndAuthor(main.user.username, main.user.usermessage);
       main.user.usermessage = '';
     }
+
+    socket.on('chat message', function(){
+      getAllMessages();
+    });
 
     function getAllMessages() {
       getAndSendInfoService.getAllMessages().then(function(res) {
@@ -25,11 +30,6 @@
         main.messages = res;
       });
     }
-
-    // getAndSendInfoService.getAllUsersInfo().then(function(res) {
-    //   //main.userInfo = res;
-    //   console.log(res);
-    // });
 
   }
 })();

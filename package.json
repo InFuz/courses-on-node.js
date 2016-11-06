@@ -1,17 +1,19 @@
 {
   "name": "courses-on-node.js",
-  "version": "0.1.1",
+  "version": "0.1.5",
   "description": "simle_chat",
   "repository": "https://github.com/InFuz/courses-on-node.js.git",
   "main": "server.js",
   "dependencies": {
     "body-parser": "^1.15.2",
+    "cors": "^2.8.1",
     "express": "^4.14.0",
     "my-mongodb": "https://github.com/InFuz/my-mongodb.git",
-    "cors": "^2.8.1",
+    "socket.io": "^1.5.1"
+  },
+  "devDependencies": {
     "pm2": "^2.0.12"
   },
-  "devDependencies": {},
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "start": "node server.js"
